@@ -1,0 +1,113 @@
+import pandas as pd
+from keras import backend as K
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MaxAbsScaler
+from sklearn.model_selection import train_test_split
+import csv
+import numpy as np
+import tensorflow as tf
+from imblearn.over_sampling import SMOTE
+from sklearn import metrics
+
+with open('D:/Code/java/xerces_data/xerces-1.2.csv', 'r', newline='') as csvfile:
+    reader = csv.reader(csvfile)
+    data = list(reader)
+    for row in data:
+        # 将csv文件的缺陷处理成0、1的形式
+        if row[23] == 'bug':
+            pass
+        elif row[23] == '0':
+            pass
+        else:
+            row[23] = 1
+            with open('D:/Code/java/xerces_data/train_data_static.csv', 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(data)
+
+with open('D:/Code/java/xerces_data/xerces-1.3.csv', 'r', newline='') as csvfile:
+    reader = csv.reader(csvfile)
+    data = list(reader)
+    for row in data:
+        #print(row[2])
+        # 将csv文件的缺陷处理成0、1的形式
+        if row[23] == 'bug':
+            pass
+        elif row[23] == '0':
+            pass
+        else:
+            row[23] = 1
+            with open('D:/Code/java/xerces_data/test_data_static.csv', 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(data)
+
+
+train_data = pd.read_csv('D:/Code/java/xerces_data/train_data_static.csv')
+test_data = pd.read_csv('D:/Code/java/xerces_data/test_data_static.csv')
+#读取训练和测试的X和Y
+x_train = train_data.iloc[:, 3:23]
+x_test = test_data.iloc[:, 3:23]
+y_train = train_data.iloc[:, -1]
+y_test = test_data.iloc[:, -1]
+
+#SMOTE算法部分
+#检索数据集中缺陷标签为1的数据，标签为y_defects,词向量为X_defects
+#使用SMOTE算法对缺陷标签为1的样本进行合成,defect_samples_resampled, _ 代表经过SMOTE算法平衡后的缺陷样本数据集和标签
+smote = SMOTE(k_neighbors=5, random_state=42)
+x_train_resampled, y_train_resampled = smote.fit_resample(x_train, y_train)
+print(np.shape(x_train_resampled))
+
+x_train, x_valid, y_train, y_valid = train_test_split(x_train_resampled, y_train_resampled, random_state=11)
+#修改y的类型
+y_train = K.cast_to_floatx(y_train)
+y_test = K.cast_to_floatx(y_test)
+y_valid = K.cast_to_floatx(y_valid)
+#数据标准化
+scaler = StandardScaler()
+x_train_scaler = scaler.fit_transform(x_train)
+x_test_scaler = scaler.fit_transform(x_test)
+x_valid_scaler = scaler.fit_transform(x_valid)
+#数据缩放至[0,1]
+max_abs_scaler = MaxAbsScaler()
+x_train = max_abs_scaler.fit_transform(x_train_scaler)
+x_test = max_abs_scaler.fit_transform(x_test_scaler)
+x_valid = max_abs_scaler.fit_transform(x_valid_scaler)
+
+#将二维数据转换为三维数据(np数据）
+x_train = x_train[:, np.newaxis, :]
+x_test = x_test[:, np.newaxis, :]
+x_valid = x_valid[:, np.newaxis, :]
+
+
+#print(type(x_train_resampled))#<class 'pandas.core.frame.DataFrame'>
+
+
+features = 20#每个时间步的特征数量
+#创建模型
+model = tf.keras.models.Sequential()
+model.add(tf.keras.layers.LSTM(100, input_shape=(1, features), return_sequences=True))
+model.add(tf.keras.layers.Dropout(0.2))
+model.add(tf.keras.layers.LSTM(100, return_sequences=True))
+model.add(tf.keras.layers.Dropout(0.2))
+model.add(tf.keras.layers.LSTM(100))
+model.add(tf.keras.layers.Dropout(0.2))
+optimizer = tf.keras.optimizers.Adam(0.001)
+# 添加输出层
+model.add(tf.keras.layers.Dense(1, activation='sigmoid'))  # 二分类问题，使用sigmoid激活函数
+# 编译模型
+model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+history = model.fit(x_train, y_train, validation_data=(x_valid, y_valid), epochs=150, batch_size=128)
+
+pred_y_test = model.predict(x_test)
+pred_y_test = np.round(pred_y_test)
+
+accuracy = metrics.accuracy_score(y_test, pred_y_test)
+precision = metrics.precision_score(y_test, pred_y_test)
+recall = metrics.recall_score(y_test, pred_y_test)
+f1 = metrics.f1_score(y_test, pred_y_test)
+auc = metrics.roc_auc_score(y_test, pred_y_test)
+print(accuracy, precision, recall, f1, auc)
+
+
+
+
+
