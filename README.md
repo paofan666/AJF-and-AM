@@ -1,11 +1,10 @@
 # Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Adv20202/PrimeSpecPCR.git
-   cd PrimeSpecPCR
+   git clone https://github.com/paofan666/AJF-and-AM.git
+   cd AJF-and-AM
    ```
-
-3. Install Python dependencies:
+2. Install Python dependencies:
    ```bash
    pip install -r requirements.txt
    ```
