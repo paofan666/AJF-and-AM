@@ -18,11 +18,11 @@ Five Java projects from the PROMISE dataset were selected for the experiments: L
 # code
 To evaluate the feasibility of the AST joint feature + Attention-BiLSTM software defect prediction algorithm proposed in this thesis, experiments were conducted under two prediction scenarios and three sets of comparative experiments were designed:
 
-- Experimental comparison of AST combined features and individual features – The AST joint feature, the pure AST feature and the pure static measurement feature are taken as the data defect feature respectively, and the LSTM model is used to carry out the feature learning for the three features, and the software defect prediction experiment is completed.[At-Bi-LSTM-SA.py](code/At-Bi-LSTM-SA.py)
+- Experimental comparison of AST combined features and individual features – The AST joint feature [LSTM_SA.py](code/LSTM_SA.py), the pure AST feature [LSTM_AST.py](code/LSTM_AST.py) and the pure static measurement feature [LSTM_Static.py](code/LSTM_Static.py) are taken as the data defect feature respectively, and the LSTM model is used to carry out the feature learning for the three features, and the software defect prediction experiment is completed.
 
-- Experimental comparison of defect models intra project – To compare the proposed model with baseline approaches in within-project settings.
+- Experimental comparison of defect models intra project – The AST joint feature is taken as the data defect feature, and Attention-CNN [At-CNN-SA.py](code/At-CNN-SA.py) and ABL models [At-Bi-LSTM-SA.py](code/At-Bi-LSTM-SA.py) are used to learn the defect feature respectively, and the experimental comparison of defect models within the project is completed..
 
-- Experimental comparison of defect prediction cross project – To evaluate model generalization capability in cross-project settings.
+- Experimental comparison of defect prediction cross project – In the cross-project software defect prediction experiment comparison, AST joint feature is used as data defect feature, Attention-CNN [TCA-Attention-CNN-SA.py](code/TCA-Attention-CNN-SA.py) and ABL [TCA-Attention-BiLSTM-SA.py](code/TCA-Attention-BiLSTM-SA.py) models are used to learn the defect feature, and cross-project software defect prediction is completed..
 
 # Evaluation Metrics
 
