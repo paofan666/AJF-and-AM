@@ -7,7 +7,7 @@ import csv
 import os
 import pandas as pd
 
-#去除java文件中的注释
+#Remove comments from java files
 def remove_comments(code):
     pattern = r"(\".*?\"|\'.*?\')|(/\*.*?\*/|//[^\r\n]*$)"
     regex = re.compile(pattern, re.MULTILINE | re.DOTALL)
@@ -18,7 +18,7 @@ def remove_comments(code):
             return match.group(1)
     return regex.sub(replacer, code)
 
-#节点预处理,处理所有的java文件组合成节点序列
+#Node preprocessing, processing all java files into node sequences
 def node_deal(file_path):
     try:
         node_name = []
@@ -26,25 +26,25 @@ def node_deal(file_path):
         f = fd.read()
         f = remove_comments(f)
         java_tree = javalang.parse.parse(f)
-        #类别声明
+        #Category Statement
         for path, node in java_tree.filter(javalang.tree.ClassDeclaration):
             node_name.append(type(node).__name__)
             for i in range(len(node_name)):
                 if node_name[i] == "ClassDeclaration":
                     node_name[i] = java_tree.package.name + '.' + node.name
-        #接口声明
+        #interface declaration
         for path, node in java_tree.filter(javalang.tree.InterfaceDeclaration):
             node_name.append(type(node).__name__)
             for i in range(len(node_name)):
                 if node_name[i] == 'InterfaceDeclaration':
                     node_name[i] = java_tree.package.name + '.' + node.name
-        #批注申明
+        #Annotations and affirmations
         for path, node in java_tree.filter(javalang.tree.AnnotationDeclaration):
             node_name.append(type(node).__name__)
             for i in range(len(node_name)):
                 if node_name[i] == "AnnotationDeclaration":
                     node_name[i] = java_tree.package.name + '.' + node.name
-        #枚举声明
+        #Enumerate statements
         for path, node in java_tree.filter(javalang.tree.EnumDeclaration):
             node_name.append(type(node).__name__)
             for i in range(len(node_name)):
@@ -54,7 +54,7 @@ def node_deal(file_path):
     except javalang.parser.JavaSyntaxError:
         print(file_path)
         pass
-'''处理不能打开的文件    
+'''Handle files that can't be opened    
 try:
 except UnicodeDecodeError:
         print(file_path)
@@ -72,7 +72,7 @@ for foldername, subfolders, filenames in os.walk('D:/Code/PROMISE/lucene-solr-re
 
 
 
-#对PROMISE数据集进行处理，读取csv表格文件,并生成组合文件
+#The PROMISE dataset is processed, the csv table file is read, and the combination file is generated
 with open('D:/Code/java/lucene_data/lucene-2.0.csv', newline='') as input_csvfile:
     reader = csv.reader(input_csvfile)
     with open('D:/Code/java/lucene_data/train_composite_data_20ast.csv', 'w', newline='') as out_csvfile:
@@ -82,14 +82,14 @@ with open('D:/Code/java/lucene_data/lucene-2.0.csv', newline='') as input_csvfil
             writer.writerow([data_name, data_bug])
 
 
-#CBOW模型
+#CBOW model
 model = Word2Vec(
     LineSentence(open('D:/Code/java/type_node.txt', 'r', encoding='utf-8')),
     sg=0,
     vector_size=20,
     window=2,
     min_count=1,)
-#词向量保存
+#Word vector preservation
 model.save('word2vec.model')
 dic = model.wv.index_to_key
 #print(dic)
@@ -100,11 +100,11 @@ with open('D:/Code/java/lucene_data/train_composite_data_20ast.csv', 'r', newlin
     reader = csv.reader(csvfile)
     data = list(reader)
     #print(data)
-    # 特定处理，删除某一特定行x
+    # Specific processing, delete a specific line x
     #del data[74]
     for row in data:
         #print(row[2])
-        # 将csv文件的缺陷处理成0、1的形式
+        # Treat defects in the csv file as 0 and 1
         if row[1] == 'bug':
             pass
         elif row[1] == '0':
@@ -116,7 +116,7 @@ with open('D:/Code/java/lucene_data/train_composite_data_20ast.csv', 'r', newlin
                 writer.writerows(data)
 
 
-#将词向量的每个维度一次写入csv文件中
+#Write each dimension of the word vector to the csv file at once
 df = pd.read_csv('D:/Code/java/lucene_data/train_composite_data_20ast.csv')
 new_columns = ['vector' + str(i) for i in range(1, 21)]
 df = df.reindex(columns=[*df.columns.tolist(), *new_columns])
