@@ -1,3 +1,14 @@
+# Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Adv20202/PrimeSpecPCR.git
+   cd PrimeSpecPCR
+   ```
+
+3. Install Python dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 # data
 This study focuses on software defect prediction for Java projects.
 The experimental data is sourced from the PROMISE public dataset, a well-known benchmark collection for software engineering research.
