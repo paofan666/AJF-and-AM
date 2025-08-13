@@ -4,11 +4,11 @@ import scipy.linalg
 from sklearn.metrics import pairwise
 
 """
-求解核矩阵K
-    ker:求解核函数的方法
-    X1:源域数据的特征矩阵
-    X2:目标域数据的特征矩阵
-    gamma:当核函数方法选择rbf时，的参数
+Solve the nuclear matrix K
+    ker: A method for solving a kernel function
+    X1: The feature matrix of the source domain data
+    X2: Feature matrix of the target domain data
+    gamma: The parameter of when the kernel function method selects rbf
 """
 def kernel(ker, X1, X2, gamma):
     K = None
@@ -41,33 +41,33 @@ class TCA:
 
     def fit(self, Xs, Xt):
         """
-        :param Xs: 源域的特征矩阵 （样本数x特征数）
-        :param Xt: 目标域的特征矩阵 （样本数x特征数）
-        :return: 经过TCA变换后的Xs_new,Xt_new
+        :param Xs: Feature matrix of the source domain (number of samples x number of features)
+        :param Xt: Feature matrix of the target domain (number of samples x number of features)
+        :return: After TCA transformation Xs_new,Xt_new
         """
-        X = np.hstack((Xs.T, Xt.T))     #X.T是转置的意思；hstack则是将数据的相同维度数据放在一起
-        X = X/np.linalg.norm(X, axis=0)  #求范数默认为l2范数即平方和开方，按列向量处理，这里相当于
+        X = np.hstack((Xs.T, Xt.T))     #X.T means transpose; hstack is to put data of the same dimension together
+        X = X/np.linalg.norm(X, axis=0)  #The default is l2 norm, that is, the sum of squares and squares, and is processed as a column vector
         m, n = X.shape
         ns, nt = len(Xs), len(Xt)
-        #构造MMD矩阵 L
+        #Construct the MMD matrix L
         e = np.vstack((1 / ns*np.ones((ns, 1)), -1 / nt*np.ones((nt, 1))))
         M = e * e.T
         M = M / np.linalg.norm(M, 'fro')
-        #构造中心矩阵H
+        #Construct the center matrix H
         H = np.eye(n) - 1 / n*np.ones((n, n))
-        #构造核函数矩阵K
+        #Construct the kernel function matrix K
         K = kernel(self.kernel_type, X, None, gamma=self.gamma)
         n_eye = m if self.kernel_type == 'primal' else n
 
-        #注意核函数K就是后边的X特征，只不过用核函数的形式表示了
+        #Note that the kernel function K is the X feature at the end, but it is expressed in the form of a kernel function
         a = np.linalg.multi_dot([K, M, K.T]) + self.lamb * np.eye(n_eye)#XMX_T+lamb*I
         b = np.linalg.multi_dot([K, H, K.T])#XHX_T
 
-        w, V = scipy.linalg.eig(a, b)  #这里求解的是广义特征值，特征向量
-        ind = np.argsort(w)#argsort()函数是将x中的元素从小到大排列，提取其对应的index(索引)，然后输出到ind
-        A = V[:, ind[:self.dim]]#取前dim个特征向量得到变换矩阵A，按照特征向量的大小排列好,
-        Z = np.dot(A.T, K)#将数据特征*映射A
-        Z /= np.linalg.norm(Z, axis=0)#单位向量话
-        Xs_new, Xt_new = Z[:, :ns].T, Z[:, ns:].T#得到源域特征和目标域特征
+        w, V = scipy.linalg.eig(a, b)  #Here we solve the generalized eigenvalue, eigenvector
+        ind = np.argsort(w)#The argsort() function arranges the elements in x from small to large, extracts their corresponding indexes, and outputs them to ind
+        A = V[:, ind[:self.dim]]#Take the first dim eigenvectors to obtain the transformation matrix A, and arrange them according to the size of the eigenvectors
+        Z = np.dot(A.T, K)#Map the data feature to A
+        Z /= np.linalg.norm(Z, axis=0)#Unit vector words
+        Xs_new, Xt_new = Z[:, :ns].T, Z[:, ns:].T#Source domain features and target domain features are obtained
         return Xs_new, Xt_new
 
