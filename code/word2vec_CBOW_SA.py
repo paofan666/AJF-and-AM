@@ -1,4 +1,4 @@
-#数据处理为20维静态+20维词向量（bug为0/1）的csv文件
+#The data is processed as a 20-dimensional static + 20-dimensional word vector (bug is 0/1) CSV files
 from gensim.models import Word2Vec
 from gensim.models.word2vec import LineSentence
 import javalang
@@ -9,7 +9,7 @@ import os
 import pandas as pd
 
 
-#去除java文件中的注释
+#Remove comments from java files
 def remove_comments(code):
     pattern = r"(\".*?\"|\'.*?\')|(/\*.*?\*/|//[^\r\n]*$)"
     regex = re.compile(pattern, re.MULTILINE | re.DOTALL)
@@ -21,7 +21,7 @@ def remove_comments(code):
     return regex.sub(replacer, code)
 
 
-#节点预处理,处理所有的java文件组合成节点序列
+#Node preprocessing, processing all java files into node sequences
 def node_deal(file_path):
     try:
         node_name = []
@@ -39,13 +39,13 @@ def node_deal(file_path):
             for i in range(len(node_name)):
                 if node_name[i] == 'InterfaceDeclaration':
                     node_name[i] = java_tree.package.name + '.' + node.name
-        # 针对被解析成AnnotationDeclaration的接口
+        # For interfaces that are parsed as AnnotationDeclaration
         for path, node in java_tree.filter(javalang.tree.AnnotationDeclaration):
             node_name.append(type(node).__name__)
             for i in range(len(node_name)):
                 if node_name[i] == "AnnotationDeclaration":
                     node_name[i] = java_tree.package.name + '.' + node.name
-        # 针对枚举类解析问题
+        # For the problem of parsing enum classes
         for path, node in java_tree.filter(javalang.tree.EnumDeclaration):
             node_name.append(type(node).__name__)
             for i in range(len(node_name)):
@@ -67,35 +67,35 @@ for foldername, subfolders, filenames in os.walk('D:/Code/PROMISE/xalan-j_2_5_0-
             fw.close()
 
 
-#对PROMISE数据集进行处理，读取csv表格文件,并生成组合文件
+#The PROMISE dataset is processed, the csv table file is read, and the combination file is generated
 df = pd.read_csv('D:/Code/java/xalan_data/xalan-2.5.csv')
 df.drop(df.columns[[0, 1]], axis=1, inplace=True)
 df.to_csv('D:/Code/java/xalan_data/test_composite_data.csv', index=False)
 
 
-#CBOW模型
+#CBOW model
 model = Word2Vec(
     LineSentence(open('D:/Code/java/type_node.txt', 'r', encoding='utf-8')),
     sg=0,
     vector_size=20,
     window=2,
     min_count=1,)
-#词向量保存
+#Word vector preservation
 model.save('word2vec.model')
 dic = model.wv.index_to_key
 word_vectors_dict = {word: model.wv[word] for word in model.wv.index_to_key}
 
-#x修改bug类型为0/1
+#x modifies bug type 0/1
 with open('D:/Code/java/xalan_data/test_composite_data.csv', 'r', newline='') as csvfile:
     reader = csv.reader(csvfile)
     data = list(reader)
-    # 特定处理，删除某一特定行x
+    # Specific processing, delete a specific line x
 
     #del data[4]
 
     for row in data:
         #print(row[2])
-        # 将csv文件的缺陷处理成0、1的形式
+        # Treat defects in the csv file as 0 and 1
         if row[21] == 'bug':
             pass
         elif row[21] == '0':
